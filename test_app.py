@@ -175,7 +175,13 @@ def the_checker_catches_every_way_a_plan_can_break() -> None:
         "dimension uncovered":   lambda p: p.update(questions=[
                                      q for q in p["questions"]
                                      if q["dimension"] != DIMENSIONS[-1]]),
-        "dimension on one question": lambda p: p["questions"].pop(0),
+        # Keep exactly one question of the first dimension, whatever the plan's shape:
+        # popping the first question leaves a valid plan when that dimension has more.
+        "dimension on one question": lambda p: p.update(questions=
+                                     [q for q in p["questions"]
+                                      if q["dimension"] == DIMENSIONS[0]][:1]
+                                     + [q for q in p["questions"]
+                                        if q["dimension"] != DIMENSIONS[0]]),
         "every turn reserved for coverage": lambda p: p["policy"].update(reserve_early=4),
         # A plan is edited by hand as often as it is generated, and `--check` is what
         # reads that one: it has to name the problem rather than traceback.

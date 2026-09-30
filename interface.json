@@ -219,8 +219,8 @@
   ]
  },
  "measured": {
-  "_note": "Not written by the model, and not guessed: samples is a cost knob; noise_floor holds one measured spread per kind of question Jev is asked, because a Choice among questions and a Score against a rubric do not wobble by the same amount. Measure them against your own deployment with `python3 app.py --noise` — these were taken on jev-latest released 2026-09-10, 20 averaged groups per kind, on the record whose marks sat nearest the gate. A floor measured where Jev is already certain reads as roughly zero and trusts every close call, so --noise picks that record for you. All three are merged into a plan after generation. measurement_boundary is the score at which a Replay counts a change of side; it is for drift detection only and never decides anything about a person (ADR-0002).",
-  "samples": 3,
+  "_note": "Not written by the model, and not guessed: samples is a cost knob, and one call is the default; raise it only if your own records show Jev's spread moving a decision; noise_floor holds one measured spread per kind of question Jev is asked, because a Choice among questions and a Score against a rubric do not wobble by the same amount. Measure them against your own deployment with `python3 app.py --noise` — these were taken on jev-latest released 2026-09-10, 20 averaged groups per kind, on the record whose marks sat nearest the gate. A floor measured where Jev is already certain reads as roughly zero and trusts every close call, so --noise picks that record for you. All three are merged into a plan after generation. measurement_boundary is the score at which a Replay counts a change of side; it is for drift detection only and never decides anything about a person (ADR-0002).",
+  "samples": 1,
   "noise_floor": {
    "choice": 0.0203,
    "score": 0.0178

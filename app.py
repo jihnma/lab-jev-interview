@@ -647,6 +647,10 @@ def judge_version() -> Json:
     return stamped
 
 
+# What Jev reported it spent, one entry per answered call, in call order. Nothing in the
+# program reads it; a measurement harness does.
+JEV_USAGE: list[Json] = []
+
 def ask_jev(state: Any, questions: Json) -> Json | None:
     body = json.dumps({"state": state, "model": JEV_MODEL, "questions": questions}).encode()
     headers = {"Authorization": f"Bearer {os.environ.get('TYPESAFE_API_KEY', '')}",
@@ -663,7 +667,10 @@ def ask_jev(state: Any, questions: Json) -> Json | None:
                 response = _connection.getresponse()
                 payload, status = response.read(), response.status
             if status == 200:
-                return json.loads(payload)["answers"]
+                answered = json.loads(payload)
+                if "usage" in answered:
+                    JEV_USAGE.append(answered["usage"])
+                return answered["answers"]
             if status in JEV_RETRY_STATUS and not is_last:
                 time.sleep(JEV_BACKOFF * 2**attempt)
                 continue
