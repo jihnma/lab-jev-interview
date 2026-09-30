@@ -1,11 +1,33 @@
 # Adaptive Interview on Jev
 
-This program interviews one applicant from a plan of questions. Between answers it asks a judge
-which question to ask next, and whether it heard enough to stop. After the interview it asks for
-the rubric level of each answer and one `fit` level against the brief, then makes the total by
-arithmetic. No generative model runs during an interview. The judge is
-[Jev](https://docs.typesafe.ai), a System One model: it writes no text, it reads a JSON state and
-gives a probability for each closed answer.
+This program interviews one applicant from a plan of questions. Very little of it is logic of its
+own: the plan is data a person approved, every judgment comes from
+[Jev](https://docs.typesafe.ai), and the code between them is arithmetic. Jev is a System One
+model — it writes no text, it reads a JSON state and gives a probability for each closed answer.
+
+Not the real code. Its shape, so that one screen shows where the judge sits. `ask(...)` means put
+the question in front of the person and wait.
+
+```python
+plan    = approve(llm.draft(brief))    # once, offline. A person reads it; the commit approves it.
+answers = [ask(plan.first_question)]   # the plan's own. Nothing is said yet, so the judge is idle.
+
+while True:
+    # One request, two judgments. `enough` is a probability, read only on a turn the plan
+    # would let end the interview.
+    pick, enough = judge(plan.still_allowed(answers), given=answers)
+    if not pick or len(answers) >= plan.max_questions or enough > plan.done_threshold:
+        break
+    widget = judge(plan.inputs_allowed_for(pick))    # which input to put in front of them
+    answers.append(ask(pick, widget))
+
+levels = judge.score(answers, plan.rubrics)   # one request, after the interview, never during it
+total  = plan.weighted_mean(levels)           # arithmetic. No model runs in here.
+```
+
+Every `plan.` is data somebody committed: the thresholds directly, and the rest as names the
+program implements. Every `judge(...)` is one closed question. **This test replaced `judge` and
+changed nothing else.**
 
 ## Result
 
@@ -39,7 +61,7 @@ synthetic interviews.
 - Every arm used the same program, the same approved plan per language, the same applicants,
   answers and order. Only `ask_jev` changed.
 - The generative judge got the identical request content, and returned the identical shape of
-  answer. Both arms wrap the same call with the same `(state, questions)`.
+  answer. Both arms wrap `judge` above with the same `(state, questions)`.
 - A rule fixed each label before any interview ran. Hire needs solid or deep Java, lived money
   experience and aligned principles. Reject needs Java at none or thin, or money at none, or
   principles in conflict. Everybody else is borderline and no accuracy count includes them.
