@@ -1,0 +1,983 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title id="tab">Interviewer</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap">
+  <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"
+    integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
+    crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js"
+    integrity="sha384-fw+eTlCc7suMV/1w/7fr2/PmwElUIt5i82bi+qTiLXvjRXZ2/FkiTNA/w0MhXnGI"
+    crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --ink: #000F1E;
+      --paper: #FFFFFF;
+      --panel: #F6F8FA;
+      --sel: #EEF2F6;
+      --soft: #464A4D;
+      --label: #53575A;
+      --mute: #656A6D;
+      --line: #E3E8EC;
+      --rule: #F0F3F6;
+      --hi: #FFFF00;
+      --bad: #B3261E;
+      /* Three bands for a mark. They ride on top of the number and the bar's length,
+         which already say the same thing — red and deep green sit at the same
+         luminance, so colour alone would be lost on a red-green deficiency. */
+      --mark-weak: var(--bad);
+      --mark-mid: #1E8455;
+      --mark-strong: #0B5733;
+      --ease: cubic-bezier(.16, 1, .3, 1);
+      accent-color: var(--ink);
+      /* The candidate's page is ink and yellow and enormous. This one is white and
+         small on purpose: the two must never be mistaken for each other. */
+      color-scheme: light;
+      font: 400 14px/1.6 "Archivo", "Noto Sans JP", system-ui, sans-serif;
+      font-variant-numeric: tabular-nums;
+      scrollbar-color: var(--line) transparent;
+      scrollbar-width: thin;
+    }
+
+    *,
+    ::before,
+    ::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    ::selection {
+      background: var(--hi);
+      color: var(--ink)
+    }
+
+    li {
+      list-style: none
+    }
+
+    :where(input, button, select, textarea) {
+      font: inherit;
+      color: inherit
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 2px
+    }
+
+    body {
+      color: var(--ink);
+      background: var(--paper)
+    }
+
+    /* ── top bar ──────────────────────────────────────────────────────── */
+    .top {
+      position: sticky;
+      inset-block-start: 0;
+      z-index: 5;
+      display: flex;
+      align-items: baseline;
+      gap: 8px 18px;
+      flex-wrap: wrap;
+      padding: 13px 20px;
+      border-block-end: 1px solid var(--line);
+      background: color-mix(in srgb, var(--paper) 88%, transparent);
+      backdrop-filter: blur(10px);
+    }
+
+    .top h1 {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -.02em;
+      white-space: nowrap;
+    }
+
+    .top .role {
+      flex: 1;
+      min-width: 200px;
+      font-size: 12px;
+      color: var(--mute)
+    }
+
+    .top .err:empty {
+      display: none
+    }
+
+    .tools {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap
+    }
+
+    /* ── controls ─────────────────────────────────────────────────────── */
+    button {
+      border: 0;
+      border-radius: 0;
+      cursor: pointer;
+      font-weight: 500;
+      letter-spacing: -.005em;
+      background: none;
+      transition: background 140ms, color 140ms, box-shadow 140ms;
+    }
+
+    .btn {
+      height: 32px;
+      padding-inline: 14px;
+      font-size: 13px;
+      box-shadow: inset 0 0 0 1px var(--line);
+
+      &:hover {
+        box-shadow: inset 0 0 0 1px var(--ink)
+      }
+
+      &:active {
+        background: var(--sel)
+      }
+    }
+
+    .btn.key {
+      background: var(--hi);
+      box-shadow: none;
+
+      &:hover {
+        background: var(--ink);
+        color: var(--paper)
+      }
+    }
+
+    input[type=password] {
+      height: 38px;
+      padding-inline: 12px;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      min-width: 220px;
+
+      &:focus {
+        border-color: var(--ink);
+        outline: 0
+      }
+    }
+
+    .signin {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      max-width: 520px;
+      margin: 14vh auto;
+      padding-inline: 20px;
+    }
+
+    .signin .who {
+      flex-basis: 100%;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -.02em
+    }
+
+    .signin button {
+      height: 38px;
+      padding-inline: 20px;
+      font-size: 14px
+    }
+
+    .err {
+      color: var(--bad);
+      font-size: 13px
+    }
+
+    /* ── the two panes ────────────────────────────────────────────────── */
+    .panes {
+      display: grid
+    }
+
+    @media (width >=980px) {
+
+      /* header, whatever link was last issued, then the panes. A link that turned up
+         inside the scrolling queue could scroll away from the button that made it. */
+      #desk {
+        display: grid;
+        grid-template-rows: auto auto 1fr;
+        height: 100svh
+      }
+
+      .panes {
+        grid-template-columns: minmax(340px, 30%) minmax(0, 1fr);
+        min-height: 0;
+      }
+
+      .panes>* {
+        height: 100%;
+        overflow: auto;
+        overscroll-behavior: contain
+      }
+
+      .queue {
+        border-inline-end: 1px solid var(--line)
+      }
+    }
+
+    /* Below the breakpoint the document scrolls and the panes stack, so a sticky
+       bar would park the section headings underneath itself. */
+    @media (width <=979px) {
+      .top {
+        position: static
+      }
+    }
+
+    .queue {
+      padding: 4px 0 40px
+    }
+
+    .stack {
+      padding: 0 20px 48px
+    }
+
+    h2 {
+      position: sticky;
+      inset-block-start: 0;
+      z-index: 2;
+      margin-block-start: 20px;
+      padding: 14px 20px 8px;
+      background: var(--paper);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--label);
+    }
+
+    h2 .count {
+      display: inline-block;
+      margin-inline-start: 8px;
+      padding-inline: 6px;
+      background: var(--sel);
+      color: var(--mute);
+      letter-spacing: .04em;
+    }
+
+    .stack h2 {
+      position: static;
+      padding-inline: 0;
+      margin-block-start: 26px
+    }
+
+    .note {
+      padding: 2px 20px 8px;
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: var(--mute)
+    }
+
+    .note b {
+      font-weight: 500;
+      color: var(--label)
+    }
+
+    /* ── link strip ───────────────────────────────────────────────────── */
+    .link {
+      display: flex;
+      gap: 8px 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 12px 20px;
+      padding: 10px 12px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+    }
+
+    /* One click puts the whole URL in the selection, so the keyboard alone is enough
+       when the clipboard is not offered — a file:// page, or an origin without it. */
+    .link code {
+      user-select: all
+    }
+
+    .btn.copy {
+      flex: 0 0 auto;
+      height: 28px;
+      padding-inline: 12px;
+      font-size: 12.5px;
+      background: var(--paper)
+    }
+
+    .link .what {
+      flex-basis: 100%;
+      font-size: 11px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--label)
+    }
+
+    .link code {
+      /* Shrink to the URL, so the button that copies it stands next to it and not at the
+         far side of a wide screen. */
+      flex: 0 1 auto;
+      min-width: 180px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      word-break: break-all;
+      color: var(--soft);
+    }
+
+    /* ── the queue rows ───────────────────────────────────────────────── */
+    .row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 2px 12px;
+      align-items: baseline;
+      width: 100%;
+      padding: 11px 20px;
+      border-block-end: 1px solid var(--rule);
+      position: relative;
+      text-align: start;
+      cursor: pointer;
+
+      /* The radio is the selection. It survives a swap and needs nothing to keep it. */
+      input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0
+      }
+
+      &:hover {
+        background: var(--sel)
+      }
+
+      &:has(:checked) {
+        background: var(--sel);
+        box-shadow: inset 2px 0 0 var(--ink)
+      }
+
+      &:has(:focus-visible) {
+        outline: 2px solid var(--ink);
+        outline-offset: -2px
+      }
+    }
+
+    .row .when {
+      font-size: 12.5px;
+      color: var(--mute);
+      display: flex;
+      align-items: center;
+      gap: 7px
+    }
+
+    .row .id {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-weight: 500;
+      font-size: 13px;
+      color: var(--ink)
+    }
+
+    .row .score {
+      font-weight: 600;
+      font-size: 16px;
+      letter-spacing: -.02em;
+      white-space: nowrap
+    }
+
+    .row .score small {
+      font-weight: 400;
+      font-size: 12px;
+      color: var(--mute)
+    }
+
+    .row .score.none {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--mute)
+    }
+
+    .row .meta {
+      grid-column: 1 / -1;
+      font-size: 12.5px;
+      color: var(--label)
+    }
+
+    [data-band=weak] {
+      color: var(--mark-weak)
+    }
+
+    [data-band=mid] {
+      color: var(--mark-mid)
+    }
+
+    [data-band=strong] {
+      color: var(--mark-strong)
+    }
+
+    .flag {
+      background: var(--hi);
+      color: var(--ink);
+      padding-inline: 5px;
+      font-size: 12px
+    }
+
+    .fresh {
+      background: var(--ink);
+      color: var(--paper);
+      padding-inline: 6px;
+      font-size: 10px;
+      letter-spacing: .08em
+    }
+
+    .dot {
+      flex: 0 0 5px;
+      width: 5px;
+      height: 5px;
+      background: var(--hi);
+      box-shadow: inset 0 0 0 1px var(--ink)
+    }
+
+    /* ── a waiting applicant, read in the right pane ──────────────────── */
+    .cand li {
+      padding-block: 12px;
+      border-block-start: 1px solid var(--rule)
+    }
+
+    .cand .tag {
+      font-size: 11px;
+      letter-spacing: .06em;
+      color: var(--label)
+    }
+
+    .cand q {
+      display: block;
+      max-width: min(46em, 74ch);
+      margin-block-start: 4px;
+      quotes: none;
+      font-size: 13px;
+      line-height: 1.6
+    }
+
+    .cand .btn {
+      margin-block-start: 16px
+    }
+
+    .cand>.note {
+      padding-inline: 0
+    }
+
+    /* The standing condition of every report, said once, where it is true. */
+    .standing {
+      margin-block-start: 14px;
+      padding-block-start: 12px;
+      border-block-start: 1px solid var(--rule);
+      font-size: 12px;
+      color: var(--mute);
+    }
+
+    /* The decision itself, asked of the reader once they have read. Quiet on purpose —
+       it follows from the marks above it and should not compete with them. */
+    .outcome {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-block-start: 14px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .outcome .ask {
+      flex: 1;
+      min-width: 11em;
+      font-size: 12.5px;
+      color: var(--label)
+    }
+
+    .outcome .when {
+      flex-basis: 100%;
+      font-size: 11.5px;
+      color: var(--mute)
+    }
+
+    .btn.out {
+      height: 28px;
+      padding-inline: 12px;
+      font-size: 12.5px;
+      background: var(--paper);
+
+      &.on {
+        background: var(--ink);
+        color: var(--paper);
+        box-shadow: none
+      }
+    }
+
+    /* Where the question came from. A lighter rule than .says below it: that one is
+       evidence for a mark, this one is the applicant's own account, summarised at the one
+       moment it was read. */
+    .cand .why {
+      margin-block-start: 6px;
+      padding-inline-start: 11px;
+      border-inline-start: 1px solid var(--line);
+      max-width: min(46em, 74ch);
+      font-size: 12.5px;
+      line-height: 1.6;
+      color: var(--mute);
+    }
+
+    /* Its own line and the same small label the link strip uses, so it reads as a label
+       and not as the first words of the reason. */
+    .cand .why b {
+      display: block;
+      margin-block-end: 3px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .06em;
+      color: var(--label);
+    }
+
+    /* The sentence a mark would stand for. Set beside a rule so it reads as evidence
+       for the number rather than as more of the answer. */
+    .says {
+      margin-block-start: 5px;
+      padding-inline-start: 11px;
+      border-inline-start: 1px solid var(--ink);
+      max-width: min(46em, 74ch);
+      font-size: 12.5px;
+      line-height: 1.6;
+      color: var(--mute);
+    }
+
+    /* ── the report ───────────────────────────────────────────────────── */
+    /* Not "nothing here". On a first run the queue is two headings and nothing else, so
+       this pane is the only thing on the page that can say what to do first. The block is
+       centred; its text is not, because three steps read down a left edge. */
+    .empty {
+      display: grid;
+      place-content: center;
+      justify-items: start;
+      min-height: 60svh;
+      padding: 24px 20px;
+      color: var(--mute);
+      font-size: 13px;
+    }
+
+    .empty .begin {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -.02em;
+      color: var(--ink)
+    }
+
+    .empty .btn {
+      height: 36px;
+      padding-inline: 18px;
+      font-size: 13.5px
+    }
+
+    .flow {
+      counter-reset: step;
+      margin-block: 16px 20px
+    }
+
+    .flow li {
+      counter-increment: step;
+      display: grid;
+      grid-template-columns: 20px minmax(0, 1fr);
+      gap: 1px 11px;
+      max-width: 34em;
+      padding-block: 7px;
+    }
+
+    /* The same flat square the queue counts with, so a number means one thing here. */
+    .flow li::before {
+      content: counter(step);
+      grid-row: span 2;
+      display: grid;
+      place-content: center;
+      height: 20px;
+      margin-block-start: 1px;
+      background: var(--sel);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--label);
+    }
+
+    .flow b {
+      font-weight: 600;
+      font-size: 13.5px;
+      color: var(--ink)
+    }
+
+    .flow span {
+      font-size: 12.5px;
+      line-height: 1.6
+    }
+
+    .empty .or {
+      max-width: 34em;
+      margin-block-start: 20px;
+      padding-block-start: 14px;
+      border-block-start: 1px solid var(--rule);
+      font-size: 12.5px;
+    }
+
+    .rep-head {
+      position: sticky;
+      inset-block-start: 0;
+      z-index: 2;
+      display: flex;
+      gap: 6px 14px;
+      align-items: baseline;
+      flex-wrap: wrap;
+      padding: 14px 0 10px;
+      border-block-end: 1px solid var(--line);
+      background: var(--paper);
+    }
+
+    .rep-head b {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -.02em;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace
+    }
+
+    .rep-head .when {
+      font-size: 12.5px;
+      color: var(--mute)
+    }
+
+
+    /* One grid for every row, so a long label cannot shorten its own bar and
+       two bars of the same score always draw the same length. */
+    .bars {
+      display: grid;
+      grid-template-columns: minmax(96px, 210px) minmax(60px, 1fr) auto;
+      gap: 9px 14px;
+      align-items: center;
+      margin-block: 16px 4px;
+      font-size: 13px;
+    }
+
+    .bar {
+      display: contents
+    }
+
+    .bar>span:first-child {
+      line-height: 1.35
+    }
+
+    .bar b {
+      font-weight: 600
+    }
+
+    .bars .rule {
+      grid-column: 1 / -1;
+      height: 1px;
+      background: var(--line);
+      margin-block: 3px
+    }
+
+    /* spans, so they need a box before height means anything */
+    .bar .track {
+      display: block;
+      height: 7px;
+      background: var(--rule);
+      box-shadow: inset 0 0 0 1px var(--line)
+    }
+
+    .bar .fill {
+      display: block;
+      height: 100%;
+      background: currentColor
+    }
+
+    .bar.sum .track {
+      height: 11px
+    }
+
+    .bar .num {
+      font-size: 12px;
+      color: var(--mute);
+      white-space: nowrap
+    }
+
+    .bar .num strong {
+      font-weight: 600;
+      font-size: 13px
+    }
+
+    /* :where() so this is a default the band can override, not a rule that outranks it */
+    :where(.bar .num strong) {
+      color: var(--ink)
+    }
+
+    .flags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-block-start: 12px
+    }
+
+    .qa {
+      padding-block: 12px;
+      border-block-start: 1px solid var(--rule);
+    }
+
+    .qa .head {
+      display: flex;
+      gap: 12px;
+      align-items: baseline;
+      font-size: 11px;
+      letter-spacing: .06em;
+      color: var(--label)
+    }
+
+    .qa .mark {
+      margin-inline-start: auto;
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: 0
+    }
+
+    :where(.qa .mark) {
+      color: var(--ink)
+    }
+
+    .qa q {
+      display: block;
+      max-width: min(46em, 74ch);
+      margin-block: 6px 0;
+      font-weight: 500;
+      font-size: 13px;
+      line-height: 1.55;
+      quotes: none
+    }
+
+    .qa samp {
+      display: block;
+      max-width: min(46em, 74ch);
+      margin-block-start: 6px;
+      font-family: inherit;
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--soft);
+      white-space: pre-wrap
+    }
+
+    @media (width <=620px) {
+      .bars {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0
+      }
+
+      .bar {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 3px 10px;
+        margin-block-end: 12px;
+      }
+
+      .bar .num {
+        text-align: end;
+        white-space: normal
+      }
+
+      .bar .track {
+        grid-column: 1 / -1
+      }
+
+      .bars .rule {
+        margin-block: 2px 12px
+      }
+    }
+
+    @media (width <=979px) {
+      .stack {
+        padding-inline: 20px
+      }
+
+      .row,
+      h2,
+      .note,
+      .cand {
+        padding-inline: 16px
+      }
+
+      .link {
+        margin-inline: 16px
+      }
+
+      /* Stacked, this pane is the end of the page: held-open height is nothing to scroll,
+         and its own inset would put it further in than everything above it. */
+      .empty {
+        min-height: 0;
+        place-content: start;
+        padding-inline: 0
+      }
+    }
+
+    /* ── the Brief, behind a button ───────────────────────────────────── */
+    /* Plain text on purpose: the Brief is headings and bullets, and a Markdown parser
+       is a dependency for something a <pre> already reads. */
+    dialog {
+      /* The reset above zeroes every margin, including the `auto` a dialog centres with. */
+      margin: auto;
+      width: min(74ch, 92vw);
+      max-height: 84svh;
+      padding: 0;
+      border: 1px solid var(--ink);
+      background: var(--paper);
+      color: var(--ink);
+      overflow: auto;
+      overscroll-behavior: contain;
+
+      &::backdrop {
+        background: color-mix(in srgb, var(--ink) 34%, transparent)
+      }
+    }
+
+    dialog form {
+      position: sticky;
+      inset-block-start: 0;
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      border-block-end: 1px solid var(--line);
+      background: var(--paper);
+    }
+
+    dialog form b {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: -.01em
+    }
+
+    dialog form .btn {
+      background: var(--paper)
+    }
+
+    dialog pre {
+      padding: 18px 20px 28px;
+      font: inherit;
+      font-size: 13px;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      color: var(--soft);
+    }
+
+    /* ── waiting on the server ────────────────────────────────────────── */
+    /* The one state the page never showed. htmx marks what it is waiting on: the form,
+       for the sign-in, and the button itself everywhere else — which is why :disabled is
+       named too. Last, because every .btn variant above it sets its own background.
+       Colour says the button is spent; the stripe says something is still coming. */
+    .btn:is(.htmx-request, :disabled) {
+      /* :hover on .btn.key outranks this and its shorthand would wipe the stripe. Dead to
+         the pointer for the flight is also the honest thing for a button already sent. */
+      pointer-events: none;
+      background: var(--line);
+      color: var(--label);
+      box-shadow: none;
+      background-image: linear-gradient(var(--ink) 0 0);
+      background-repeat: no-repeat;
+      /* Nothing until the wait is worth reporting: a local round trip is 40ms, and a
+         stripe that appears for two frames on every click reads as a fault in the page.
+         The size lives in the keyframes so the delay leaves it at zero. */
+      background-size: 0 2px;
+      animation: waiting 900ms var(--ease) 150ms infinite alternate;
+    }
+
+    @keyframes waiting {
+      from {
+        background-size: 40% 2px;
+        background-position: 0 100%
+      }
+
+      to {
+        background-size: 40% 2px;
+        background-position: 100% 100%
+      }
+    }
+
+    /* A finger is not a cursor, and 32px is a miss about as often as a hit. */
+    @media (pointer: coarse) {
+
+      /* Named one by one, because each of these sets its own height and outranks .btn. */
+      .btn,
+      .btn.out,
+      .btn.copy,
+      .empty .btn {
+        height: 44px
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        transition-duration: .01ms !important
+      }
+
+      /* The colour alone still says the button is spent. */
+      .btn:is(.htmx-request, :disabled) {
+        animation: none
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!--desk-->
+
+  <script>
+    // The one thing markup cannot say. When a request never lands htmx swaps nothing,
+    // and a page that is quietly out of date looks exactly like a quiet afternoon.
+    addEventListener("htmx:sendError", () => {
+      const say = document.getElementById("trouble");
+      if (say) say.textContent = say.dataset.failed;
+    });
+
+    // A link is made to be sent somewhere else. The clipboard wants a gesture, which is
+    // the other thing markup cannot hold; without it the page ends in a drag-select.
+    addEventListener("click", async (e) => {
+      const hit = e.target.closest(".link .copy");
+      if (!hit) return;
+      const url = hit.previousElementSibling, was = hit.textContent;
+      try {
+        await navigator.clipboard.writeText(url.textContent);
+        hit.textContent = hit.dataset.said;
+        setTimeout(() => {hit.textContent = was;}, 1600);
+      } catch {
+        getSelection().selectAllChildren(url);   // then one keystroke finishes it
+      }
+    });
+
+    // The Brief is one line of script because showModal() has no markup. Everything a
+    // modal otherwise needs — backdrop, Esc, focus trap, the close — is the browser's.
+    addEventListener("click", (e) => {
+      if (e.target.closest("[data-brief]")) document.getElementById("brief").showModal();
+    });
+
+    // Stacked, the reading pane sits below the whole queue, and the link strip above it;
+    // whichever one just changed is the one to be looking at. Side by side neither the
+    // page nor the panes' parent scrolls, so both of these are no-ops there.
+    const bring = (e) => {
+      // An out-of-band swap replaces the node rather than its contents, so the one the
+      // event carries can already be detached, and scrolling to a detached node does
+      // nothing at all. Ask the document for whichever one is standing there now.
+      const id = e.target.id, it = document.getElementById(id);
+      if (!it) return;
+      if (id === "links") return it.scrollIntoView({block: "start"});
+      // Opening something to read goes to its top. A POST — an approval, an outcome —
+      // leaves the page where it was, so what it just wrote stays in sight.
+      if (id !== "stack" || e.detail.requestConfig?.verb !== "get") return;
+      it.scrollTop = 0;
+      it.scrollIntoView({block: "start"});
+    };
+    addEventListener("htmx:afterSwap", bring);
+    addEventListener("htmx:oobAfterSwap", bring);
+  </script>
+
+</html>

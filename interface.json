@@ -1,0 +1,373 @@
+{
+ "widgets": {
+  "text": {
+   "when": "answered in one short line",
+   "sj": {
+    "type": "text"
+   }
+  },
+  "textarea": {
+   "when": "needs a multi-line explanation",
+   "sj": {
+    "type": "comment",
+    "rows": 4
+   }
+  },
+  "date": {
+   "when": "answered with a single date",
+   "sj": {
+    "type": "text",
+    "inputType": "date"
+   }
+  },
+  "number": {
+   "when": "answered with a single number",
+   "sj": {
+    "type": "text",
+    "inputType": "number"
+   }
+  },
+  "boolean": {
+   "when": "a plain yes or no question",
+   "sj": {
+    "type": "boolean",
+    "renderAs": "radio"
+   }
+  },
+  "rating": {
+   "when": "answered as a degree on a 1-5 scale",
+   "sj": {
+    "type": "rating",
+    "rateMax": 5
+   }
+  },
+  "radio": {
+   "when": "exactly one option applies",
+   "opt": true,
+   "sj": {
+    "type": "radiogroup"
+   }
+  },
+  "select": {
+   "when": "exactly one option applies, and there are enough of them that a column of radio buttons would crowd the page",
+   "opt": true,
+   "sj": {
+    "type": "dropdown"
+   }
+  },
+  "checkbox": {
+   "when": "several options may apply at once",
+   "opt": true,
+   "sj": {
+    "type": "checkbox"
+   }
+  },
+  "ranking": {
+   "when": "the options must be put in order of importance",
+   "opt": true,
+   "sj": {
+    "type": "ranking"
+   }
+  }
+ },
+ "strings": {
+  "_note": "applyHint is the only thing an applicant is told about what happens to their text, and they cannot read this code to find out. It goes to openrouter.ai — outside this service — before it is dropped, so the hint says so. Shorten it if you like; do not shorten that part away.",
+  "en": {
+   "title": "Interview",
+   "answer": "Answer",
+   "uncovered": "not assessed: %s",
+   "human_review": "Not an automated decision — a human decides",
+   "rail": "Marks",
+   "sendFailed": "Your answer was not recorded. Check the connection and submit again.",
+   "required": "Required",
+   "record": "Your answers",
+   "meta": "Interview",
+   "start": "Begin",
+   "finished": "Your answers have been recorded. Thank you.",
+   "covered": "asked",
+   "tied_levels": "two levels are tied on %s — it could as easily be the other",
+   "apply": "Your background",
+   "applyHint": "Paste your résumé or a summary of your experience. It is sent once to a language model outside this service, which writes the questions you will be asked. The text itself is not stored — only those questions are.",
+   "applySent": "Thank you. You will be sent an interview link.",
+   "not_scored": "nothing was scored — this is an outage, not a result",
+   "no_question": "the question this answer was given to can no longer be found: %s",
+   "applyEmpty": "Paste your résumé before you begin.",
+   "yes": "Yes",
+   "no": "No",
+   "order": "Give each one a place, 1 first.",
+   "choose": "Choose one",
+   "applyLong": "That is longer than %s characters. Please trim it.",
+   "expired": "This link has expired. Ask for a new one."
+  },
+  "ja": {
+   "title": "面接インタビュー",
+   "answer": "回答",
+   "uncovered": "未評価の観点: %s",
+   "human_review": "自動判定ではありません — 最終判断は人が行います",
+   "rail": "採点欄",
+   "sendFailed": "回答は記録されていません。接続を確認して、もう一度送信してください。",
+   "required": "必須",
+   "record": "これまでの回答",
+   "meta": "面接",
+   "start": "開始する",
+   "finished": "回答を記録しました。ありがとうございました。",
+   "covered": "質問済み",
+   "tied_levels": "%s は2つの段階が拮抗している — もう一方でもおかしくない",
+   "apply": "あなたの経歴",
+   "applyHint": "職務経歴、または経験の要約を貼り付けてください。何を聞くかを決めるため、このサービスの外にある言語モデルへ一度だけ送られます。本文は保存されず、そこで書かれた質問だけが残ります。",
+   "applySent": "ありがとうございました。面接リンクをお送りします。",
+   "not_scored": "採点できていません — これは障害であって評価ではありません",
+   "no_question": "この回答が答えていた質問がもう見つかりません: %s",
+   "applyEmpty": "経歴を貼り付けてから開始してください。",
+   "yes": "はい",
+   "no": "いいえ",
+   "order": "それぞれに順位をつけてください。1が最初です。",
+   "choose": "選択してください",
+   "applyLong": "%s文字を超えています。短くしてください。",
+   "expired": "このリンクは期限切れです。新しいリンクを依頼してください。"
+  }
+ },
+ "vocabulary": {
+  "aggregate": {
+   "mean": {
+    "when": "the dimension is a general capability and several answers average out fairly"
+   },
+   "min": {
+    "when": "one bad answer in the dimension is disqualifying on its own"
+   },
+   "max": {
+    "when": "the dimension only needs one convincing demonstration"
+   }
+  },
+  "total": {
+   "weighted_mean": {
+    "when": "the dimensions trade off, and a strong axis may fairly carry a weaker one"
+   },
+   "min_dimension": {
+    "when": "the company promises one thing, and a weak axis must not be carried by the others; weights are not read"
+   }
+  },
+  "tie_break": {
+   "cover_first": {
+    "when": "a dimension with no answer yet is worse than a shallow one, so a level pick goes to whatever is still owed"
+   },
+   "plan_order": {
+    "when": "the order the questions are written in is deliberate, so a level pick follows it and coverage is left to the reserve"
+   }
+  },
+  "coverage": {
+   "reserve_debt": {
+    "when": "every dimension must be answered before any is answered twice, so turns are held back for what is still owed"
+   },
+   "free": {
+    "when": "the conversation leads and the budget ends it: a dimension may finish unanswered and be flagged uncovered, and because `done` only speaks once coverage is met, an interview that leaves one short runs to max_q"
+   }
+  }
+ },
+ "bounds": {
+  "min_q": [
+   3,
+   10
+  ],
+  "max_q": [
+   4,
+   12
+  ],
+  "done_threshold": [
+   0.5,
+   0.95
+  ],
+  "gap_k": [
+   1.0,
+   5.0
+  ],
+  "per_dimension": [
+   0,
+   4
+  ],
+  "reserve_early": [
+   0,
+   12
+  ],
+  "samples": [
+   1,
+   5
+  ],
+  "rubric_levels": [
+   4,
+   4
+  ],
+  "weight": [
+   0.01,
+   1.0
+  ],
+  "noise_floor": [
+   0.0,
+   0.5
+  ],
+  "dimensions": [
+   1,
+   8
+  ],
+  "questions": [
+   1,
+   30
+  ],
+  "supplement": [
+   1,
+   4
+  ]
+ },
+ "measured": {
+  "_note": "Not written by the model, and not guessed: samples is a cost knob; noise_floor holds one measured spread per kind of question Jev is asked, because a Choice among questions and a Score against a rubric do not wobble by the same amount. Measure them against your own deployment with `python3 app.py --noise` — these were taken on jev-latest released 2026-09-10, 20 averaged groups per kind, on the record whose marks sat nearest the gate. A floor measured where Jev is already certain reads as roughly zero and trusts every close call, so --noise picks that record for you. All three are merged into a plan after generation. measurement_boundary is the score at which a Replay counts a change of side; it is for drift detection only and never decides anything about a person (ADR-0002).",
+  "samples": 3,
+  "noise_floor": {
+   "choice": 0.0203,
+   "score": 0.0178
+  },
+  "measurement_boundary": 1.5
+ },
+ "intake": {
+  "_note": "Jev screens the Brief before a model is paid to write a Plan from it (Q43).",
+  "threshold": 0.5,
+  "checks": {
+   "work": {
+    "true": "the document says what the work actually is, concretely enough to ask about",
+    "false": "the document only describes the company or the role in the abstract"
+   },
+   "values": {
+    "true": "the document says what it wants in a person, not only what it offers them",
+    "false": "the document never says what would make someone right for this"
+   },
+   "gradable": {
+    "true": "there is enough here to tell a strong answer from a weak one",
+    "false": "any answer would look equally good against this document"
+   }
+  }
+ },
+ "turn": {
+  "_note": "The words Jev is asked with each turn. The two slots are the loop's structure and stay in app.py; `done`'s criteria are the Plan's, because what counts as enough is one Brief's question. `option` may use {dimension}, {text} and {context}, and nothing else.",
+  "done": "Judging by `job_context`, have we heard enough to assess this candidate?",
+  "next": "Given the answers so far, which question is now most worth asking?",
+  "widget": "Given `question_asked` and the answers so far, which input should this person be given to answer it with?",
+  "option": "[{dimension}] {text} — asked in situations like: {context}"
+ },
+ "generation": {
+  "_note": "The instruction given to the writing model. Kept here so the domain stays out of app.py.",
+  "prompt": "You are writing the interview plan for one company, from the document below.\n\n=== THE DOCUMENT ===\n{brief}\n=== END OF DOCUMENT ===\n\nWrite the plan in the same language the document is written in — including the\ndimension names, which are shown to people and must read as the document's own\nwords, never as English identifiers.\n\nRules that matter more than they look:\n- Dimensions come from what this document says it cares about. Do not import a generic\n  competency list. Weights sum to 1.0 across the dimensions you choose.\n- Every question belongs to exactly one dimension, and every dimension has at least two\n  questions so a weak answer is not the whole of it.\n- `context` says when this question is worth asking, given what has been heard so far.\n  It is read by a small model choosing the next question, so describe the situation.\n- Rubric levels describe concrete situations, worst first, not degrees of goodness.\n  'Cannot give an example' beats 'poor'. Each level must stand on its own.\n- Where a question asks what somebody has done, one level must be the answer that\n  describes it well without having done it — fluent, correct, and not theirs. It is\n  the commonest answer a strong talker gives, and a rubric with no level for it\n  leaves the judge filing it at the top.\n- `options` is null unless the question genuinely has a closed set of answers; then\n  `ui` must be one that takes options.\n- `fit.rubric` judges the whole person against this document, on the same shape of scale.\n- Things the document says it does NOT care about must not become questions.\n- min_q and max_q: enough turns to cover every dimension, with room to go deeper.\n  max_q must exceed min_q or the interview can never end early.\n- done.true and done.false: when has this interview heard enough to stop? Two situations\n  in the document's own terms, not degrees. A small model reads them to decide whether\n  to end the interview, so they must be checkable against the answers given.\n- Write more questions than per_dimension x dimensions. With exactly that many, coverage\n  is only satisfied by the very last answer and the interview can never end early.\n- max_q must exceed per_dimension x dimensions PLUS reserve_early. At or below that,\n  every turn is reserved for coverage from the first one, the judge never gets to\n  choose what follows an answer, and the interview cannot adapt to anybody.\n- reserve_early: how many turns early to start holding questions back for a dimension\n  still owed an answer. 0 lets the judge pick freely until the budget only just covers\n  what is owed; a number as large as max_q puts breadth before depth from the first turn.\n  It changes the order questions are asked in, and which ones, if the interview ends\n  before the budget runs out.\n- per_dimension: how many answers every dimension must be scored on before the\n  interview may end. 0 lets any question be asked at any time; 1 guarantees each\n  dimension is touched; 2 keeps a dimension from resting on one answer, at the cost of\n  a longer interview. It must fit the budget: per_dimension x dimensions <= max_q.\n",
+  "supplement": "A company is hiring. Below is what it says it needs, then one applicant's own\naccount of their background. Write the questions worth asking THIS applicant that\nthe standard set does not already ask.\n\n=== WHAT THE COMPANY NEEDS ===\n{brief}\n=== END ===\n\n=== THE APPLICANT'S OWN ACCOUNT ===\n{resume}\n=== END ===\n\n=== THE STANDARD SET ALREADY ASKS THESE ===\n{asked}\n=== END ===\n\nWrite in the same language the company's document is written in.\n\n- 2 to {most} questions. Fewer is better than padded.\n- Each one must come from something specific in this applicant's account — a claim\n  to test, a gap to ask about, a strength worth going deeper on. A question that\n  would fit any applicant is not worth asking here.\n- The standard set above has its subjects covered. A question landing on a subject\n  already listed there is wasted however differently it is worded — that subject gets\n  answered anyway. Spend these few on what only this account raises, and on nothing\n  the standard set would have reached without it.\n- `dimension` must be exactly one of: {dimensions}\n- `id` must start with `x_`.\n- `context` says when this is worth asking given what has been heard so far.\n- `options` is null. Set it only if the question genuinely has a closed set of\n  answers to pick from, and then `ui` must be one that takes options. It is not\n  a place for the rubric — the rubric goes in `rubric`.\n- Rubric levels describe concrete situations, worst first, and there must be\n  exactly {levels} of them so they read on the same scale as the rest.\n- Where the question asks what they did, one level must be the answer that describes\n  it well without having done it. A question built on something in their own account\n  is exactly where that turns up — including the answer that withdraws the claim the\n  question was built on.\n- Re-read the part of the document saying what it does not look at, and check each\n  question against it before writing it down.\n- A gap the applicant states is a reason to ask what they did about it — what they\n  reached for, who they asked, what it cost them. It is not a reason to ask them to\n  speculate about the thing they have not done: that answer only tests who talks well.\n"
+ },
+ "admin": {
+  "_note": "The Interviewer's own page. Separate from `strings`, which the candidate's page gets. `steps` is the order the page teaches in its empty pane — the flow itself, so how many there are is written here and not in the markup.",
+  "en": {
+   "title": "Interviewer",
+   "role": "This is the interviewer's page. The candidate never sees it.",
+   "password": "Password",
+   "enter": "Enter",
+   "denied": "Wrong password",
+   "link": "Send this to the candidate",
+   "results": "Finished interviews",
+   "empty": "Nothing yet.",
+   "questions": "questions",
+   "flags": "flags",
+   "total": "total",
+   "fit": "fit",
+   "conf": "confidence",
+   "failed": "Could not reach the server.",
+   "fresh": "new",
+   "pending": "Waiting for you",
+   "nobody": "No applicants waiting.",
+   "applyLink": "New application link",
+   "brief": "What this hires for",
+   "close": "Close",
+   "applyWhat": "Send this to someone applying",
+   "approve": "Approve and make an interview link",
+   "extra": "asked only of this applicant",
+   "extraNote": "Scored and shown, never counted in the total.",
+   "forThem": "Questions written for this applicant",
+   "unwritable": "no questions could be written",
+   "unscored": "not scored",
+   "choose": "Pick an applicant or a finished interview from the list and it opens here.",
+   "waiting": "waiting since",
+   "outcomeAsk": "Hire this person?",
+   "hired": "Hired",
+   "notHired": "Not hired",
+   "outcomeAt": "recorded",
+   "begin": "An interview starts here",
+   "steps": [
+    [
+     "Send an application link",
+     "The applicant pastes their background once, and joins the waiting list."
+    ],
+    [
+     "Approve their questions",
+     "Up to four are written for that person. You read them before anyone is asked."
+    ],
+    [
+     "Send their interview link",
+     "Approving writes it. The report lands here when they finish."
+    ]
+   ],
+   "copy": "Copy",
+   "copied": "Copied",
+   "plainOnly": "Approve and they are interviewed on the shared questions only.",
+   "why": "Why this question",
+   "resumeElsewhere": "Their background is not on this screen. Check it in your mail or HR system before approving."
+  },
+  "ja": {
+   "title": "面接官",
+   "role": "これは面接官用の画面です。応募者には表示されません。",
+   "password": "パスワード",
+   "enter": "入る",
+   "denied": "パスワードが違います",
+   "link": "これを応募者に送ってください",
+   "results": "終了した面接",
+   "empty": "まだありません。",
+   "questions": "問",
+   "flags": "フラグ",
+   "total": "総合",
+   "fit": "適合度",
+   "conf": "確信度",
+   "failed": "サーバーに接続できません。",
+   "fresh": "新着",
+   "pending": "承認待ち",
+   "nobody": "待っている応募者はいません。",
+   "applyLink": "応募リンクを発行",
+   "brief": "この求人について",
+   "close": "閉じる",
+   "applyWhat": "応募する人に送ってください",
+   "approve": "承認して面接リンクを作る",
+   "extra": "この応募者にだけ聞いた質問",
+   "extraNote": "採点し表示しますが、総合点には入れません。",
+   "forThem": "この応募者のために書かれた質問",
+   "unwritable": "質問を書けませんでした",
+   "unscored": "未採点",
+   "choose": "一覧から応募者か終了した面接を選ぶと、ここに開きます。",
+   "waiting": "応募",
+   "outcomeAsk": "この応募者を採用しますか",
+   "hired": "採用",
+   "notHired": "不採用",
+   "outcomeAt": "記録",
+   "begin": "面接はここから始まります",
+   "steps": [
+    [
+     "応募リンクを送る",
+     "応募者が経歴を一度貼ると、承認待ちに並びます。"
+    ],
+    [
+     "質問を承認する",
+     "その人のために最大4問が書かれます。聞く前にあなたが読みます。"
+    ],
+    [
+     "面接リンクを送る",
+     "承認すると発行されます。終わると結果がここに出ます。"
+    ]
+   ],
+   "copy": "コピー",
+   "copied": "コピーしました",
+   "plainOnly": "承認すると、全員共通の質問だけで面接します。",
+   "why": "この質問になった理由",
+   "resumeElsewhere": "経歴はここにありません。メールか社内の人事システムで確認してから承認してください。"
+  }
+ }
+}

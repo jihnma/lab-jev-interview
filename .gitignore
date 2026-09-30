@@ -1,0 +1,31 @@
+# secrets and local data
+.env
+.env.*
+!.env.example
+
+# Interview records, and the questions written for one applicant — those reveal what
+# that applicant wrote about themselves. Both belong in the operator's private
+# repository (ADR-0004), never in this public one. The suffixed forms are the ones a
+# person makes by hand to keep a set aside — `results.ja-sample/` and the like — which
+# hold records of exactly the same shape and were slipping past the two names above.
+results/
+candidates/
+results.*/
+candidates.*/
+
+# The server's own output. It names who applied and carries whatever an upstream API
+# said back; a public repository is no place for either.
+*.log
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# editors · os
+.DS_Store
