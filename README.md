@@ -30,7 +30,8 @@ text. **This test replaced `judge` and changed nothing else.**
 
 ## Result
 
-**In one line.** Jev judged each interview in 4.9 s where Claude Haiku 4.5 needed 40.4 s, and its
+> [!NOTE]
+> Jev judged each interview in 4.9 s where Claude Haiku 4.5 needed 40.4 s, and its
 scores produced a higher AUC against the synthetic hire and reject labels.
 
 One test measured the judge and nothing else. 100 invented applicants met the same program, the
