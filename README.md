@@ -44,18 +44,21 @@ from the filed decisions, Jev was right about 4 more. On `fit`, Jev put all 18 a
 the company principles below 1.0, and Haiku put 6 there. The `fit` gate in the third accuracy row
 came after the results, not before, so read that one row as an observation.
 
-Three more measurements. One Jev call is enough: three averaged calls changed none of the 100
-decisions, and used 2.3 times the tokens of one call. Both judges give the same decision twice: 12
-applicants met a second interview, and no decision changed (that Jev repeat ran with three calls).
+Three more measurements. The two extra Jev calls buy very little: three averaged calls changed
+none of the 100 decisions at the bar of 1.5, got one more of the 90 right at the fitted bar, and
+used 2.3 times the tokens of one call. Both judges give the same decision twice, because 12
+applicants met a second interview and no decision changed (that Jev repeat ran with three calls).
 Extended thinking makes the generative judge slower, not equal: with it on, three interviews took
 398 s to 537 s of judge time, against 29 s to 40 s with it off.
 
 ## How the test ran
 
 - Every arm used the same program, plans, applicants, answers and order. Only `ask_jev` changed.
-- The generative judge got the identical request and returned the identical shape of answer.
+- The generative judge got the identical request content, and returned the identical shape of
+  answer. Both arms wrap the same call with the same `(state, questions)`.
 - A rule fixed each label before any interview ran. Hire needs solid or deep Java, lived money
-  experience and aligned principles; reject needs one of the opposites.
+  experience and aligned principles. Reject needs Java at none or thin, or money at none, or
+  principles in conflict. Everybody else is borderline.
 - The applicants are invented: 60 answer in Japanese, 40 in English; 33 hire, 57 reject, and 10
   borderline that no accuracy count includes.
 - Claude Sonnet 4.5 wrote every answer from its applicant's row, before any interview ran.
@@ -84,6 +87,7 @@ cd lab-jev-interview-example
 export TYPESAFE_API_KEY=...                                       # the Jev arm only
 PROGRAM=../lab-jev-interview python3 experiment/run.py jev1       # one Jev call per judgment
 PROGRAM=../lab-jev-interview python3 experiment/run.py baseline   # needs the Claude Code CLI
+PROGRAM=../lab-jev-interview python3 experiment/run.py jev        # three calls, to price the two
 PROGRAM=../lab-jev-interview python3 experiment/analyse.py
 ```
 
