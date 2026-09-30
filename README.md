@@ -9,6 +9,11 @@ gives a probability for each closed answer.
 
 ## Result
 
+**In one line.** On the same 100 interviews, Claude Haiku 4.5 needed 8.2 times more judge time
+than Jev and ranked the applicants less accurately, 0.969 against 0.993 — and the applicants it
+ranked too high are all one kind: strong on the technical questions, and in conflict with how the
+company works.
+
 One test measured the judge and nothing else. 100 invented applicants met the same program, the
 same two plans and the same answers. Jev answered each judgment one time. The baseline judge was
 Claude Haiku 4.5, also one time, with extended thinking off.
