@@ -10,7 +10,7 @@ gives a probability for each closed answer.
 ## Result
 
 **In one line.** Jev judged each interview in 4.9 s where Claude Haiku 4.5 needed 40.4 s, and its
-scores separated the synthetic hire and reject labels more cleanly.
+scores produced a higher AUC against the synthetic hire and reject labels.
 
 One test measured the judge and nothing else. 100 invented applicants met the same program, the
 same two plans and the same answers. Jev answered each judgment one time. The baseline judge was
@@ -31,7 +31,8 @@ strong on the technical questions and in conflict with how the company works. Th
 `fit` was written for, and it is the row above: Jev put all 18 of them below 1.0, and Haiku put 6.
 
 **These are invented applicants and labels written by a rule.** This test does not show that either
-judge screens real people well. It shows what the two judges do with the same 100 interviews.
+judge screens real people well. It shows how the two judges rank and score the same 100
+synthetic interviews.
 
 ## How the test ran
 
@@ -58,19 +59,18 @@ judge screens real people well. It shows what the two judges do with the same 10
 
 Each of these is in `experiment/logs/analysis.md` with its numbers.
 
-- **Per dimension, Haiku is the better judge.** It has the higher AUC on Java practice, Rust
-  readiness and alignment; Jev has the higher AUC on money correctness and on the weighted total.
-- **At the shipped boundary of 1.5, Haiku is right about 6 more of the 90.** Both judges separate
-  the groups near 2.5, so a boundary at 1.5 measures the boundary.
-- **One Jev call is enough.** Three averaged calls changed none of the 100 decisions at 1.5, moved
-  the AUC from 0.993 to 0.992, and used 2.3 times the tokens.
-- **Neither judge changes its mind.** 12 applicants met a second interview and no decision moved.
+- **Haiku has the higher AUC on three of the four dimensions:** Java practice, Rust readiness
+  and alignment. Jev has the higher AUC on money correctness, and on the weighted total.
+- **At the shipped threshold of 1.5, Haiku classifies about 6 more of the 90 labels correctly.**
+  Both judges separate hire from reject near 2.5, so this result follows the threshold somebody
+  chose and not the ranking quality above.
+- **One Jev call was enough in this test.** Three averaged calls changed none of the 100
+  decisions at 1.5, moved the AUC from 0.993 to 0.992, and used 2.3 times the tokens.
+- **No decision changed in 12 repeat interviews**, under either judge.
 - **Tokens do not compare.** Two tokenizers made the two counts, and the program escapes non-ASCII
   while the baseline prompt does not, so Jev read 72.7 MB of request text where Haiku read 48.4 MB
   of the same content. The replies do compare: Jev wrote 41% fewer output tokens.
 - **Money does not compare.** The generative run cost $30.86 at list price. Jev reports no price.
-- **Extended thinking does not close the gap.** With it on, three interviews took 398 s to 537 s of
-  judge time against 29 s to 40 s with it off.
 
 ## The data, and how to repeat it
 
