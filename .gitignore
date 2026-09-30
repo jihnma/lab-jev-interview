@@ -5,7 +5,7 @@
 
 # Interview records, and the questions written for one applicant — those reveal what
 # that applicant wrote about themselves. Both belong in the operator's private
-# repository (ADR-0004), never in this public one. The suffixed forms are the ones a
+# repository, never in this public one. The suffixed forms are the ones a
 # person makes by hand to keep a set aside — `results.ja-sample/` and the like — which
 # hold records of exactly the same shape and were slipping past the two names above.
 results/
