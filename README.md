@@ -9,25 +9,24 @@ Not the real code. Its shape, so that one screen shows where the judge sits. `as
 the question in front of the person and wait.
 
 ```python
-plan    = approve(llm.draft(brief))    # once, offline. A person reads it; the commit approves it.
-answers = [ask(plan.first_question)]   # the plan's own. Nothing is said yet, so the judge is idle.
+plan    = approve(llm.draft(brief))    # offline, once. A person reads it and approves it.
+answers = [ask(plan.first_question)]   # the plan's own; there is nothing to judge yet.
 
 while True:
-    # One request, two judgments. `enough` is a probability, read only on a turn the plan
-    # would let end the interview.
-    pick, enough = judge(plan.still_allowed(answers), given=answers)
-    if not pick or len(answers) >= plan.max_questions or enough > plan.done_threshold:
+    pick, enough = judge(plan.still_allowed(answers), given=answers)   # one request, two judgments
+    heard_enough = plan.may_end(answers) and enough > plan.done_threshold
+    if heard_enough or not pick or plan.is_full(answers):
         break
-    widget = judge(plan.inputs_allowed_for(pick))    # which input to put in front of them
+    widget = judge(plan.inputs_allowed_for(pick))
     answers.append(ask(pick, widget))
 
-levels = judge.score(answers, plan.rubrics)   # one request, after the interview, never during it
-total  = plan.weighted_mean(levels)           # arithmetic. No model runs in here.
+levels, fit = judge(plan.rubrics, plan.fit, given=answers)   # one request, after the interview
+total       = plan.weighted_mean(levels)                     # arithmetic. No model runs in here.
 ```
 
 Every `plan.` is data somebody committed: the thresholds directly, and the rest as names the
-program implements. Every `judge(...)` is one closed question. **This test replaced `judge` and
-changed nothing else.**
+program implements. Every `judge(...)` asks closed questions and gets probabilities back, never
+text. **This test replaced `judge` and changed nothing else.**
 
 ## Result
 
