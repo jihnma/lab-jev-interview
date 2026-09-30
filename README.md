@@ -22,9 +22,8 @@ Claude Haiku 4.5, also one time, with extended thinking off.
 | judge time, all interviews | **475 s** | 3,893 s |
 | judge time, one interview (median) | **4.9 s** | 40.4 s |
 | judge time, one turn (mean) | **0.22 s** | 2.03 s |
-| correct at the shipped bar of 1.5, of 90 | 62 (69%) | **68 (76%)** |
-| correct at the fitted bar, leave-one-out, of 90 | **84 (93%)** | 80 (89%) |
-| correct when `fit` gates the pass too, of 90 | **80 (89%)** | 73 (81%) |
+| AUC of the total, over the 90 labelled | **0.993** | 0.969 |
+| of the 57 to reject, how many outrank the weakest hire | **4** | 11 |
 | of the 18 against the principles, `fit` below 1.0 | **18** | 6 |
 | of the 33 to hire, `fit` at 1.5 or above | 33 | 33 |
 | interviews the judge stopped early | 59 | 49 |
@@ -37,16 +36,36 @@ the counts do compare is the reply, and Jev wrote 41% less of it. Time is the cl
 clock measured both arms from end to end, and Haiku took 14 times longer. The time Haiku reported
 for its own work is 8.2 times longer than Jev's.
 
-Now the decisions. The two judges rank the applicants almost alike, and agree on 94 of the 100
-decisions (r = 0.969). Nobody tuned the shipped bar of 1.5; it is a drift check. At that bar Haiku
-was right about 6 more applicants, and all 6 are rejects near the bar. At the bar the program fits
-from the filed decisions, Jev was right about 4 more. On `fit`, Jev put all 18 applicants against
-the company principles below 1.0, and Haiku put 6 there. The `fit` gate in the third accuracy row
-came after the results, not before, so read that one row as an observation.
+Now the decisions. AUC asks the judge's own question and leaves every bar out of it: take one
+applicant to hire and one to reject, and how often does the judge put the hire higher? Jev is right
+993 times in 1,000, and Haiku 969. The overlap says the same thing in people: of the 57 applicants
+the rule says to reject, 4 outrank the weakest hire under Jev and 11 under Haiku, and Jev's 4 are 4
+of Haiku's 11. So Jev makes no mistake here that Haiku does not make too.
 
-Three more measurements. The two extra Jev calls buy very little: three averaged calls changed
-none of the 100 decisions at the bar of 1.5, got one more of the 90 right at the fitted bar, and
-used 2.3 times the tokens of one call. Both judges give the same decision twice, because 12
+All 11 are one kind of applicant: strong on the technical questions, and in conflict with how the
+company works. Jev names that conflict directly, because it put all 18 such applicants below 1.0
+on `fit` while Haiku put 6 there. Both judges keep all 33 applicants to hire at 1.5 or above. Over
+all 100 applicants the two totals correlate at 0.969, so the judges agree nearly everywhere; they
+differ on the group the brief cares about most.
+
+Each thing the brief asks for is a dimension of its own, and there Haiku equals Jev or beats it on
+three of the four.
+
+| dimension, and its weight in the total | Jev, AUC | Haiku 4.5, AUC |
+|---|---|---|
+| Money correctness and operational judgment, 0.32 | **0.943** | 0.938 |
+| Java backend practice, 0.28 | 0.896 | **0.902** |
+| Alignment with how we work, 0.24 | 0.947 | **0.969** |
+| Rust readiness, 0.16 | 0.880 | **0.903** |
+
+Jev wins one criterion, the heaviest. It wins the four together, because its scores stay apart on
+the applicants where the two groups meet and Haiku's do not. One figure on this page still comes
+from a bar: at the shipped drift boundary of 1.5, Haiku is right about 6 more of the 90. Both
+judges separate the groups near 2.5, so 1.5 measures the boundary and not the judge.
+
+Three more measurements. The two extra Jev calls buy nothing here: three averaged calls changed
+none of the 100 decisions at 1.5, moved the AUC from 0.993 to 0.992, and used 2.3 times the tokens
+of one call. Both judges give the same decision twice, because 12
 applicants met a second interview and no decision changed (that Jev repeat ran with three calls).
 Extended thinking makes the generative judge slower, not equal: with it on, three interviews took
 398 s to 537 s of judge time, against 29 s to 40 s with it off.
@@ -71,14 +90,15 @@ Extended thinking makes the generative judge slower, not equal: with it on, thre
   the same content.
 - That the numbers hold for another model, route or brief. There was one of each.
 - That the judge and the answer writer are independent. Both are Claude models.
-- What Jev costs in money. It reports no price per call. The generative run cost $30.86 at list price.
+- What Jev costs in money. It reports no price per call. The generative run cost $30.86 at
+  list price.
 
 ## The data, and how to repeat it
 
 [lab-jev-interview-example](https://github.com/jihnma/lab-jev-interview-example) holds every
 record and log. Its `experiment/logs/analysis.md` holds each number above and much this page
 leaves out: per applicant type, per language, per half of the order, and the choice set of each
-turn. This program must be at commit `8629d80` or later, because `run.py` reads `JEV_USAGE`.
+turn.
 
 ```sh
 git clone https://github.com/jihnma/lab-jev-interview             # this program
