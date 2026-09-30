@@ -58,10 +58,11 @@ three of the four.
 | Alignment with how we work, 0.24 | 0.947 | **0.969** |
 | Rust readiness, 0.16 | 0.880 | **0.903** |
 
-Jev wins one criterion, the heaviest. It wins the four together, because its scores stay apart on
-the applicants where the two groups meet and Haiku's do not. One figure on this page still comes
-from a bar: at the shipped drift boundary of 1.5, Haiku is right about 6 more of the 90. Both
-judges separate the groups near 2.5, so 1.5 measures the boundary and not the judge.
+Jev wins one criterion, the heaviest one, which asks how an applicant handles the correctness of
+money. It wins the four together, because its scores stay apart on the applicants where the two
+groups meet and Haiku's do not. One figure on this page still comes from a bar: at the shipped
+drift boundary of 1.5, Haiku is right about 6 more of the 90. Both judges separate the groups near
+2.5, so 1.5 measures the boundary and not the judge.
 
 Three more measurements. The two extra Jev calls buy nothing here: three averaged calls changed
 none of the 100 decisions at 1.5, moved the AUC from 0.993 to 0.992, and used 2.3 times the tokens
@@ -81,6 +82,9 @@ Extended thinking makes the generative judge slower, not equal: with it on, thre
 - The applicants are invented: 60 answer in Japanese, 40 in English; 33 hire, 57 reject, and 10
   borderline that no accuracy count includes.
 - Claude Sonnet 4.5 wrote every answer from its applicant's row, before any interview ran.
+- `z-ai/glm-5.3-flash` wrote the plan from the brief with `--plan`, before any interview. A
+  person then read it and approved it with seven recorded edits, because every rubric came
+  back best-first and the program reads level 0 as the worst. Both arms met that one plan.
 
 ## What the test does not show
 
@@ -90,6 +94,9 @@ Extended thinking makes the generative judge slower, not equal: with it on, thre
   the same content.
 - That the numbers hold for another model, route or brief. There was one of each.
 - That the judge and the answer writer are independent. Both are Claude models.
+- That the judge wrote the rubric it is measured against. A generative model wrote the plan
+  and a person approved it. Both judges met the same plan, so it does not tilt the
+  comparison, but every number on this page is that plan's.
 - What Jev costs in money. It reports no price per call. The generative run cost $30.86 at
   list price.
 
